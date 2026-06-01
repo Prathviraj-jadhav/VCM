@@ -15,80 +15,44 @@ function VideoCard({
   index: number;
   isVisible: boolean;
 }) {
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [isMuted, setIsMuted] = useState(true);
-
-  const togglePlay = useCallback(() => {
-    const vid = videoRef.current;
-    if (!vid) return;
-
-    if (isPlaying) {
-      vid.pause();
-      setIsPlaying(false);
-    } else {
-      vid.muted = isMuted;
-      vid.play().then(() => setIsPlaying(true)).catch(() => {});
-    }
-  }, [isPlaying, isMuted]);
-
-  const toggleMute = useCallback(
-    (e: React.MouseEvent) => {
-      e.stopPropagation();
-      const vid = videoRef.current;
-      if (!vid) return;
-      vid.muted = !isMuted;
-      setIsMuted(!isMuted);
-    },
-    [isMuted]
-  );
+  const handleClick = () => {
+    // Open the UGC Drawer
+    window.dispatchEvent(new CustomEvent("openUGCDrawer"));
+  };
 
   return (
     <div
-      className={`relative group rounded-2xl overflow-hidden bg-gray-900 aspect-[9/16] sm:aspect-[9/14] cursor-pointer transition-all duration-700 ${
+      className={`relative group rounded-2xl overflow-hidden bg-gray-900 aspect-[9/16] sm:aspect-[9/14] cursor-pointer transition-all duration-700 hover:shadow-2xl hover:shadow-[#FFD400]/10 ${
         isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"
       }`}
       style={{ transitionDelay: `${index * 100}ms` }}
-      onClick={togglePlay}
+      onClick={handleClick}
     >
-      <video
-        ref={videoRef}
-        src={video.videoUrl}
-        muted
-        loop
-        playsInline
-        className="w-full h-full object-cover"
+      <img
+        src={video.thumbnail}
+        alt={video.title}
+        className="w-full h-full object-cover transition-transform duration-1000 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-110"
       />
 
-      {/* Overlay when not playing */}
-      {!isPlaying && (
-        <div className="absolute inset-0 bg-black/30 flex items-center justify-center transition-opacity duration-300">
-          <div className="w-14 h-14 sm:w-16 sm:h-16 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center border border-white/30 group-hover:bg-[#FFD400]/90 group-hover:border-[#FFD400] transition-all duration-300">
-            <Play size={24} className="text-white group-hover:text-gray-900 ml-1" />
-          </div>
+      {/* Glassmorphism Hover Overlay */}
+      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col items-center justify-center p-4">
+        <div className="w-14 h-14 sm:w-16 sm:h-16 bg-[#FFD400] text-gray-900 rounded-full flex items-center justify-center shadow-lg shadow-[#FFD400]/20 transform scale-75 group-hover:scale-100 transition-transform duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)]">
+          <Play size={24} fill="currentColor" className="ml-1" />
         </div>
-      )}
+        <span className="mt-4 text-[12px] sm:text-[13px] font-semibold text-[#FFD400] tracking-wider uppercase bg-black/60 backdrop-blur-md rounded-full px-4 py-1.5 border border-white/10 transform translate-y-2 group-hover:translate-y-0 transition-transform duration-500 delay-75">
+          Request Sample
+        </span>
+      </div>
 
       {/* Video info overlay */}
-      <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 to-transparent">
+      <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/90 via-black/40 to-transparent">
         <span className="inline-block text-[10px] sm:text-[11px] font-semibold bg-[#FFD400] text-gray-900 px-2 py-0.5 rounded mb-2">
           {video.category}
         </span>
-        <p className="text-white text-[14px] sm:text-[15px] font-medium">
+        <p className="text-white text-[14px] sm:text-[15px] font-medium leading-snug">
           {video.title}
         </p>
       </div>
-
-      {/* Mute/Unmute button */}
-      {isPlaying && (
-        <button
-          onClick={toggleMute}
-          className="absolute top-3 right-3 w-8 h-8 bg-black/50 backdrop-blur-sm rounded-full flex items-center justify-center text-white hover:bg-black/70 transition-colors duration-200"
-          aria-label={isMuted ? "Unmute" : "Mute"}
-        >
-          {isMuted ? <VolumeX size={14} /> : <Volume2 size={14} />}
-        </button>
-      )}
     </div>
   );
 }
@@ -161,8 +125,8 @@ export default function UGCVideos() {
                 : "opacity-0 translate-y-4"
             }`}
           >
-            UGC videos outperform traditional ads by 4x. Click to play each
-            one is crafted to stop the scroll and start a conversation.
+            UGC videos outperform traditional ads by 4x. Click any card to request
+            raw video samples and custom visual strategies for your brand.
           </p>
         </div>
 

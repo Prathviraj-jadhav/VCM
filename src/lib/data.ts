@@ -190,31 +190,31 @@ export const CASE_STUDIES = [
 export const UGC_VIDEOS = [
   {
     id: "ugc-1",
-    title: "Product Review Style",
-    thumbnail: "",
+    title: "Mumbai Maya Nagari",
+    thumbnail: "/images/ugc/ugc-cover-1.png",
     videoUrl: "https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260516_122702_390f5305-8719-41d5-ae80-d23ab3796c28.mp4",
-    category: "UGC",
+    category: "Brand Story",
   },
   {
     id: "ugc-2",
-    title: "Unboxing Experience",
-    thumbnail: "",
+    title: "Hello Malik",
+    thumbnail: "/images/ugc/ugc-cover-2.jpg",
     videoUrl: "https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260516_123323_f909c2b8-ff6c-4edf-882b-8ebcdbe389b5.mp4",
-    category: "UGC",
+    category: "Behind The Scenes",
   },
   {
     id: "ugc-3",
-    title: "Testimonial Format",
-    thumbnail: "",
+    title: "Different Faces",
+    thumbnail: "/images/ugc/ugc-cover-3.jpg",
     videoUrl: "https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260516_122702_390f5305-8719-41d5-ae80-d23ab3796c28.mp4",
-    category: "UGC",
+    category: "Local Business",
   },
   {
     id: "ugc-4",
-    title: "Before & After",
-    thumbnail: "",
+    title: "Chaya Kada",
+    thumbnail: "/images/ugc/ugc-cover-4.jpg",
     videoUrl: "https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260516_123323_f909c2b8-ff6c-4edf-882b-8ebcdbe389b5.mp4",
-    category: "UGC",
+    category: "Storytelling",
   },
 ] as const;
 
