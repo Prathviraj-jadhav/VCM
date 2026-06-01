@@ -66,11 +66,7 @@ export default function CaseStudies() {
               {/* Video Container */}
               <div
                 onClick={() => navigate("case-study-detail", { id: caseStudy.id })}
-                className={`relative ${caseStudy.bgColor} rounded-2xl overflow-hidden group cursor-pointer ${
-                  caseStudy.id === "narrativ"
-                    ? "aspect-[329/246]"
-                    : "aspect-square"
-                }`}
+                className={`relative ${caseStudy.bgColor} rounded-2xl overflow-hidden group cursor-pointer aspect-square`}
               >
                 <video
                   src={caseStudy.videoUrl}
