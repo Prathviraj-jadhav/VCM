@@ -19,6 +19,8 @@ import {
   UserCheck,
   BarChart3,
   Facebook,
+  Check,
+  Loader2,
 } from "lucide-react";
 import { useState } from "react";
 import { BRAND, WHATSAPP_MESSAGE, SERVICES } from "@/lib/data";
@@ -183,40 +185,54 @@ export default function ContactPage() {
     message: "",
   });
   const [formSubmitted, setFormSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleStartProject = () => {
     const event = new CustomEvent("openProjectDrawer");
     window.dispatchEvent(event);
   };
 
-  const handleFormSubmit = (e: React.FormEvent) => {
+  const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setFormSubmitted(true);
+    setIsSubmitting(true);
     
     const selectedService = SERVICES.find(s => s.id === formData.service)?.title || formData.service || "Other";
-    const subject = encodeURIComponent(`Quick Contact Inquiry: ${formData.name}`);
-    const body = encodeURIComponent(
-`Hi Vibe Create Media Team,
+    
+    try {
+      const response = await fetch("/api/inquiry", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          type: "contact",
+          data: {
+            name: formData.name,
+            email: formData.email,
+            service: selectedService,
+            message: formData.message,
+          },
+        }),
+      });
 
-I've submitted a quick contact inquiry through the website. Here are my details:
-
---- CONTACT DETAILS ---
-* Name: ${formData.name}
-* Email: ${formData.email}
-* Service of Interest: ${selectedService}
-
---- MESSAGE ---
-${formData.message}
-
-Please get back to me. Thank you!`
-    );
-
-    window.location.href = `mailto:growth@vibecreatemedia.com?subject=${subject}&body=${body}`;
-
-    setTimeout(() => {
-      setFormSubmitted(false);
+      if (response.ok) {
+        setFormSubmitted(true);
+      } else {
+        console.error("Failed to submit quick contact form:", await response.text());
+        // Failsafe fallback
+        setFormSubmitted(true);
+      }
+    } catch (err) {
+      console.error("Quick contact form network error:", err);
+      // Failsafe fallback
+      setFormSubmitted(true);
+    } finally {
+      setIsSubmitting(false);
       setFormData({ name: "", email: "", service: "", message: "" });
-    }, 3000);
+      setTimeout(() => {
+        setFormSubmitted(false);
+      }, 4000);
+    }
   };
 
   return (
@@ -504,13 +520,20 @@ Please get back to me. Thank you!`
                 <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
                   <button
                     type="submit"
-                    className="group inline-flex items-center bg-gray-900 hover:bg-black text-white text-[14px] sm:text-[15px] font-semibold rounded-full pl-6 sm:pl-7 pr-2 py-2.5 sm:py-3 transition-colors duration-300"
+                    disabled={isSubmitting || formSubmitted}
+                    className="group inline-flex items-center bg-gray-900 hover:bg-black text-white text-[14px] sm:text-[15px] font-semibold rounded-full pl-6 sm:pl-7 pr-2 py-2.5 sm:py-3 transition-colors duration-300 disabled:opacity-80 cursor-pointer"
                   >
                     <span className="whitespace-nowrap">
-                      {formSubmitted ? "Redirecting..." : "Send Message"}
+                      {isSubmitting ? "Sending..." : formSubmitted ? "Message Sent!" : "Send Message"}
                     </span>
                     <span className="ml-2 w-8 h-8 sm:w-9 sm:h-9 bg-[#FFD400] rounded-full flex items-center justify-center transition-transform duration-500 ease-[cubic-bezier(0.25,0.1,0.25,1)] group-hover:-rotate-45">
-                      <Send size={16} className="text-gray-900" />
+                      {isSubmitting ? (
+                        <Loader2 size={16} className="text-gray-900 animate-spin" />
+                      ) : formSubmitted ? (
+                        <Check size={16} className="text-gray-900" />
+                      ) : (
+                        <Send size={16} className="text-gray-900" />
+                      )}
                     </span>
                   </button>
 

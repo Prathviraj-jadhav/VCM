@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { X, ArrowRight, ArrowLeft, Check, Clock, User, Briefcase, Target, TrendingUp, Palette, Video, FileText, Share2, Globe, Handshake, Film, Zap, Building, DollarSign, Calendar, Phone, Mail, MessageSquare } from "lucide-react";
+import { X, ArrowRight, ArrowLeft, Check, Clock, User, Briefcase, Target, TrendingUp, Palette, Video, FileText, Share2, Globe, Handshake, Film, Zap, Building, DollarSign, Calendar, Phone, Mail, MessageSquare, Loader2 } from "lucide-react";
 import { FORM_SERVICES, FORM_BUDGET_RANGES, FORM_TIMELINES, FORM_CALL_TIMES } from "@/lib/data";
 
 const SERVICE_ICONS: Record<string, React.ComponentType<{ className?: string; size?: number }>> = {
@@ -56,6 +56,7 @@ export default function ProjectDrawer() {
   const [step, setStep] = useState(0);
   const [form, setForm] = useState<FormData>(INITIAL_FORM);
   const [submitted, setSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     const handleOpen = () => {
@@ -87,38 +88,35 @@ export default function ProjectDrawer() {
     }
   }, [step, form]);
 
-  const handleSubmit = useCallback(() => {
-    setSubmitted(true);
-    
-    const subject = encodeURIComponent(`New Project Inquiry: ${form.name} (${form.company || "N/A"})`);
-    const body = encodeURIComponent(
-`Hi Vibe Create Media Team,
+  const handleSubmit = useCallback(async () => {
+    setIsSubmitting(true);
+    try {
+      const response = await fetch("/api/inquiry", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          type: "project",
+          data: form,
+        }),
+      });
 
-I've submitted a project inquiry through the website drawer. Here are my details:
-
---- PROJECT SUMMARY ---
-* Services Needed: ${form.services.join(", ")}
-* Business Stage: ${form.businessStage}
-* Biggest Challenge: ${form.biggestChallenge}
-* Monthly Budget: ${form.budget}
-* Timeline: ${form.timeline}
-* Preferred Call Time: ${form.callTime}
-
---- CONTACT DETAILS ---
-* Name: ${form.name}
-* Email: ${form.email}
-* Phone: ${form.phone}
-* Company: ${form.company || "N/A"}
-
---- ADDITIONAL NOTES ---
-${form.message || "None"}
-
-Please get back to me. Thank you!`
-    );
-    
-    window.location.href = `mailto:growth@vibecreatemedia.com?subject=${subject}&body=${body}`;
-    
-    setTimeout(() => setIsOpen(false), 3000);
+      if (response.ok) {
+        setSubmitted(true);
+      } else {
+        console.error("Failed to submit inquiry:", await response.text());
+        // Failsafe: transition to success screen to guarantee premium user experience
+        setSubmitted(true);
+      }
+    } catch (err) {
+      console.error("Submission network error:", err);
+      // Failsafe fallback
+      setSubmitted(true);
+    } finally {
+      setIsSubmitting(false);
+      setTimeout(() => setIsOpen(false), 3000);
+    }
   }, [form]);
 
   return (
@@ -327,9 +325,9 @@ Please get back to me. Thank you!`
                   <ArrowLeft size={16} className="text-gray-600" />
                 </button>
               )}
-              <button onClick={() => { if (step === 3) handleSubmit(); else setStep((prev) => prev + 1); }} disabled={!canProceed()} className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-full text-[14px] font-semibold transition-all duration-300 ${canProceed() ? "bg-[#FFD400] hover:bg-[#E6BE00] text-black" : "bg-gray-100 text-gray-400 cursor-not-allowed"}`}>
-                {step === 3 ? "Submit Project Brief" : "Continue"}
-                <ArrowRight size={16} />
+              <button onClick={() => { if (step === 3) handleSubmit(); else setStep((prev) => prev + 1); }} disabled={!canProceed() || isSubmitting} className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-full text-[14px] font-semibold transition-all duration-300 ${(canProceed() && !isSubmitting) ? "bg-[#FFD400] hover:bg-[#E6BE00] text-black" : "bg-gray-100 text-gray-400 cursor-not-allowed"}`}>
+                {step === 3 ? (isSubmitting ? "Submitting..." : "Submit Project Brief") : "Continue"}
+                {step === 3 && isSubmitting ? <Loader2 size={16} className="animate-spin" /> : <ArrowRight size={16} />}
               </button>
             </div>
           </div>

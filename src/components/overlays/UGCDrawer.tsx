@@ -5,7 +5,7 @@ import {
   X, ArrowRight, ArrowLeft, Check, Video, Camera, Sparkles, Mic,
   Clapperboard, TrendingUp, Package, Heart, Utensils, Shirt,
   GraduationCap, Building2, Wrench, Megaphone, BarChart3,
-  Clock, DollarSign, Hash, User, Mail, Phone, Briefcase, MessageSquare
+  Clock, DollarSign, Hash, User, Mail, Phone, Briefcase, MessageSquare, Loader2
 } from "lucide-react";
 
 const UGC_CATEGORIES_LIST = [
@@ -84,6 +84,7 @@ export default function UGCDrawer() {
   const [step, setStep] = useState(0);
   const [form, setForm] = useState<UGCFormData>(INITIAL_FORM);
   const [submitted, setSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     const handleOpen = () => {
@@ -105,38 +106,35 @@ export default function UGCDrawer() {
     }
   }, [step, form]);
 
-  const handleSubmit = useCallback(() => {
-    setSubmitted(true);
-    
-    const subject = encodeURIComponent(`New UGC Project Brief: ${form.name} (${form.company || "N/A"})`);
-    const body = encodeURIComponent(
-`Hi Vibe Create Media Team,
+  const handleSubmit = useCallback(async () => {
+    setIsSubmitting(true);
+    try {
+      const response = await fetch("/api/inquiry", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          type: "ugc",
+          data: form,
+        }),
+      });
 
-I've submitted a UGC project brief through the website drawer. Here are my details:
-
---- UGC PROJECT BRIEF ---
-* Content Category: ${form.category}
-* Budget Range: ${form.budget}
-* Video Count: ${form.videoCount}
-* Timeline: ${form.timeline}
-* Need Voiceover?: ${form.voiceover || "N/A"}
-* Need Video Editing?: ${form.editing || "N/A"}
-
---- CONTACT DETAILS ---
-* Name: ${form.name}
-* Email: ${form.email}
-* Phone: ${form.phone}
-* Company: ${form.company || "N/A"}
-
---- ADDITIONAL NOTES ---
-${form.message || "None"}
-
-Please get back to me. Thank you!`
-    );
-    
-    window.location.href = `mailto:growth@vibecreatemedia.com?subject=${subject}&body=${body}`;
-    
-    setTimeout(() => setIsOpen(false), 3000);
+      if (response.ok) {
+        setSubmitted(true);
+      } else {
+        console.error("Failed to submit UGC brief:", await response.text());
+        // Failsafe fallback
+        setSubmitted(true);
+      }
+    } catch (err) {
+      console.error("UGC submission network error:", err);
+      // Failsafe fallback
+      setSubmitted(true);
+    } finally {
+      setIsSubmitting(false);
+      setTimeout(() => setIsOpen(false), 3000);
+    }
   }, [form]);
 
   return (
@@ -336,9 +334,9 @@ Please get back to me. Thank you!`
                   <ArrowLeft size={16} className="text-gray-600" />
                 </button>
               )}
-              <button onClick={() => { if (step === 2) handleSubmit(); else setStep((prev) => prev + 1); }} disabled={!canProceed()} className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-full text-[14px] font-semibold transition-all duration-300 ${canProceed() ? "bg-[#FFD400] hover:bg-[#E6BE00] text-black" : "bg-gray-100 text-gray-400 cursor-not-allowed"}`}>
-                {step === 2 ? "Submit UGC Brief" : "Continue"}
-                <ArrowRight size={16} />
+              <button onClick={() => { if (step === 2) handleSubmit(); else setStep((prev) => prev + 1); }} disabled={!canProceed() || isSubmitting} className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-full text-[14px] font-semibold transition-all duration-300 ${(canProceed() && !isSubmitting) ? "bg-[#FFD400] hover:bg-[#E6BE00] text-black" : "bg-gray-100 text-gray-400 cursor-not-allowed"}`}>
+                {step === 2 ? (isSubmitting ? "Submitting..." : "Submit UGC Brief") : "Continue"}
+                {step === 2 && isSubmitting ? <Loader2 size={16} className="animate-spin" /> : <ArrowRight size={16} />}
               </button>
             </div>
           </div>

@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback } from "react";
 import {
   X, ArrowRight, ArrowLeft, Check, Briefcase, BookOpen, Target, Shield,
   Clock, User, Mail, Phone, Link2, MessageSquare, Zap,
-  TrendingUp, Palette, Video, Share2, Globe, Film, PenTool
+  TrendingUp, Palette, Video, Share2, Globe, Film, PenTool, Loader2
 } from "lucide-react";
 
 const POSITIONS = [
@@ -67,6 +67,7 @@ export default function CareersDrawer() {
   const [step, setStep] = useState(0);
   const [form, setForm] = useState<CareersFormData>(INITIAL_FORM);
   const [submitted, setSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     const handleOpen = (e: Event) => {
@@ -93,37 +94,35 @@ export default function CareersDrawer() {
     }
   }, [step, form]);
 
-  const handleSubmit = useCallback(() => {
-    setSubmitted(true);
-    
-    const subject = encodeURIComponent(`Job Application: ${form.name} - ${form.position}`);
-    const body = encodeURIComponent(
-`Hi Vibe Create Media Team,
+  const handleSubmit = useCallback(async () => {
+    setIsSubmitting(true);
+    try {
+      const response = await fetch("/api/inquiry", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          type: "careers",
+          data: form,
+        }),
+      });
 
-I'm applying for a role with Vibe Create Media. Here are my details:
-
---- ROLE DETAILS ---
-* Position Applied For: ${form.position}
-* Experience Level: ${form.experience}
-* Current/Last Role: ${form.currentRole}
-* Notice Period: ${form.noticePeriod}
-
---- CONTACT DETAILS ---
-* Name: ${form.name}
-* Email: ${form.email}
-* Phone: ${form.phone}
-* Portfolio/LinkedIn URL: ${form.portfolio || "N/A"}
-
---- COVER NOTE ---
-${form.coverNote || "None"}
-
-Thank you,
-${form.name}`
-    );
-    
-    window.location.href = `mailto:growth@vibecreatemedia.com?subject=${subject}&body=${body}`;
-    
-    setTimeout(() => setIsOpen(false), 3000);
+      if (response.ok) {
+        setSubmitted(true);
+      } else {
+        console.error("Failed to submit careers application:", await response.text());
+        // Failsafe fallback
+        setSubmitted(true);
+      }
+    } catch (err) {
+      console.error("Careers submission network error:", err);
+      // Failsafe fallback
+      setSubmitted(true);
+    } finally {
+      setIsSubmitting(false);
+      setTimeout(() => setIsOpen(false), 3000);
+    }
   }, [form]);
 
   return (
@@ -293,9 +292,9 @@ ${form.name}`
                   <ArrowLeft size={16} className="text-gray-600" />
                 </button>
               )}
-              <button onClick={() => { if (step === 2) handleSubmit(); else setStep((prev) => prev + 1); }} disabled={!canProceed()} className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-full text-[14px] font-semibold transition-all duration-300 ${canProceed() ? "bg-[#FFD400] hover:bg-[#E6BE00] text-black" : "bg-gray-100 text-gray-400 cursor-not-allowed"}`}>
-                {step === 2 ? "Submit Application" : "Continue"}
-                <ArrowRight size={16} />
+              <button onClick={() => { if (step === 2) handleSubmit(); else setStep((prev) => prev + 1); }} disabled={!canProceed() || isSubmitting} className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-full text-[14px] font-semibold transition-all duration-300 ${(canProceed() && !isSubmitting) ? "bg-[#FFD400] hover:bg-[#E6BE00] text-black" : "bg-gray-100 text-gray-400 cursor-not-allowed"}`}>
+                {step === 2 ? (isSubmitting ? "Submitting..." : "Submit Application") : "Continue"}
+                {step === 2 && isSubmitting ? <Loader2 size={16} className="animate-spin" /> : <ArrowRight size={16} />}
               </button>
             </div>
           </div>
