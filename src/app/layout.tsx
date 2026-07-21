@@ -12,6 +12,7 @@ const poppins = Poppins({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://vibecreatemedia.com"),
   title: "Vibe Create Media | Growth, Marketing & Branding Partner",
   description:
     "We build brands, content, campaigns, and growth systems for businesses ready to dominate their market. Performance marketing, UGC, branding, and business development all under one roof.",
@@ -53,15 +54,25 @@ export const metadata: Metadata = {
     title: "Vibe Create Media | Growth, Marketing & Branding Partner",
     description:
       "We build brands, content, campaigns, and growth systems for businesses ready to dominate their market.",
+    url: "https://vibecreatemedia.com",
+    images: [
+      {
+        url: "/images/logo.png",
+        width: 1200,
+        height: 630,
+        alt: "Vibe Create Media Logo",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
     title: "Vibe Create Media | Growth, Marketing & Branding Partner",
     description:
       "We build brands, content, campaigns, and growth systems for businesses ready to dominate their market.",
+    images: ["/images/logo.png"],
   },
   alternates: {
-    canonical: "/",
+    canonical: "https://vibecreatemedia.com",
   },
 };
 
